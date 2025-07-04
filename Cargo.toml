@@ -1,0 +1,11 @@
+[package]
+name = "xdg_mimer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dirs = "5"
+gtk = { version = "0.9.5", package = "gtk4", features = ["v4_12"] }
+regex = "1.11.1"
+relm4 = "0.9.1"
+relm4-components = "0.9.1"
