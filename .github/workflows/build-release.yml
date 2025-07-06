@@ -57,7 +57,7 @@ jobs:
       - name: Prepare Debian changelog
         run: |
           cp -r debian debuild/
-          cp -r * debuild/
+          rsync -a --exclude debuild ./ debuild/
           cd debuild
           echo "xdg-mimer ($VERSION) unstable; urgency=medium" > debian/changelog
           echo "" >> debian/changelog
@@ -132,6 +132,11 @@ jobs:
           useradd -m builder
           chown -R builder .
 
+      - name: debug paths
+        run: |
+          ls -lah *
+          find . -iname *.tar.gz
+          
       - name: Create source tarball for Arch
         run: |
           mkdir -p buildsrc
