@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-linux:
-    name: Build Linux Packages
+    name: Build DEB & RPM Packages
     runs-on: ubuntu-latest
 
     steps:
