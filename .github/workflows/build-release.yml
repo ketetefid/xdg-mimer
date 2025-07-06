@@ -45,15 +45,11 @@ jobs:
 
       - name: Build binary
         run: cargo build --release
-        
-      - name: Debug target/release path
-        run: |
-          ls -lah target/release
-          file target/release/xdg-mimer || echo "Binary not found!"
     
       - name: Package as .tar.gz
         run: |
           mkdir -p dist
+          mv target/release/xdg_mimer target/release/xdg-mimer
           cp target/release/xdg-mimer dist/
           tar -czvf dist/xdg-mimer-${{ env.VERSION }}-linux.tar.gz -C dist xdg-mimer
 
@@ -136,11 +132,12 @@ jobs:
           useradd -m builder
           chown -R builder .
 
-      - name: Prepare source tarball for PKGBUILD
+      - name: Create source tarball for Arch
         run: |
-          mkdir -p xdg-mimer-${VERSION}
-          shopt -s extglob
-          cp -r !("xdg-mimer-*.tar.gz") xdg-mimer-${VERSION}/
+          mkdir -p buildsrc
+          shopt -s dotglob
+          cp -r $(ls -A | grep -vE '^xdg-mimer-[0-9]+\.[0-9]+\.[0-9]+(\.tar\.gz)?$') buildsrc/
+          mv buildsrc xdg-mimer-${VERSION}
           tar -czf xdg-mimer-${VERSION}.tar.gz xdg-mimer-${VERSION}
     
       - name: Build package (no sudo required)
