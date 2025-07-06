@@ -23,8 +23,19 @@ jobs:
       - name: Install packaging tools and deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y devscripts debhelper rpm build-essential \
-          libglib2.0-dev pkg-config libgirepository1.0-dev
+          sudo apt-get install -y devscripts debhelper rpm build-essential pkg-config
+
+      - name: Install GTK dependencies
+        run: |
+          sudo apt-get install -y \
+            libgtk-4-dev \
+            libglib2.0-dev \
+            libgdk-pixbuf-2.0-dev \
+            libcairo2-dev \
+            libpango1.0-dev \
+            libgraphene-1.0-dev \
+            libgirepository1.0-dev \
+            libatk1.0-dev
           
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
@@ -100,12 +111,29 @@ jobs:
       - name: Replace version in PKGBUILD
         run: sed -i "s/@VERSION@/${{ env.VERSION }}/g" PKGBUILD
 
-      - name: Prepare build environment
+      - name: Install system and build dependencies
         run: |
           pacman -Syu --noconfirm
+          pacman -S --noconfirm \
+            cargo \
+            rust \
+            gtk4 \
+            glib2 \
+            gdk-pixbuf2 \
+            cairo \
+            pango \
+            graphene \
+            gobject-introspection \
+            atk
+
+      - name: Add builder user and change ownership
+        run: |
           useradd -m builder
           chown -R builder .
-          su builder -c "makepkg -si --noconfirm"
+
+      - name: Build package (no sudo required)
+        run: |
+          su builder -c "makepkg -s --noconfirm"
 
       - name: Upload .pkg.tar.zst
         uses: softprops/action-gh-release@v1
