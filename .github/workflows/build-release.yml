@@ -35,10 +35,10 @@ jobs:
           cp target/release/xdg-mimer dist/
           tar -czvf dist/xdg-mimer-${{ env.VERSION }}-linux.tar.gz -C dist xdg-mimer
 
-      - name: Install packaging tools
+      - name: Install packaging tools and deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y devscripts debhelper rpm build-essential
+          sudo apt-get install -y devscripts debhelper rpm build-essential libglib2.0-dev pkg-config
 
       # ----- DEB BUILD -----
       - name: Prepare Debian changelog
@@ -86,13 +86,14 @@ jobs:
       image: archlinux:base-devel
     steps:
       - uses: actions/checkout@v4
+      - name: Replace version in PKGBUILD
+        run: sed -i "s/@VERSION@/${{ env.VERSION }}/g" PKGBUILD
 
       - name: Prepare build environment
         run: |
           pacman -Syu --noconfirm
           useradd -m builder
           chown -R builder .
-          sed -i "s/@VERSION@/$VERSION/g" PKGBUILD
           su builder -c "makepkg -si --noconfirm"
 
       - name: Upload .pkg.tar.zst
