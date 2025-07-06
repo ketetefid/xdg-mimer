@@ -38,7 +38,8 @@ jobs:
       - name: Install packaging tools and deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y devscripts debhelper rpm build-essential libglib2.0-dev pkg-config
+          sudo apt-get install -y devscripts debhelper rpm build-essential \
+          libglib2.0-dev pkg-config libgirepository1.0-dev
 
       # ----- DEB BUILD -----
       - name: Prepare Debian changelog
@@ -84,6 +85,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: archlinux:base-devel
+    env:
+      VERSION: ${{ needs.build-linux.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - name: Replace version in PKGBUILD
