@@ -5,6 +5,7 @@ Maintainer: Kete Tefid <ketetefid@gmail.com>
 Build-Depends:
   debhelper-compat (= 13),
   cargo,
+  dh-cargo,
   rustc,
   pkg-config,
   libgtk-4-dev,
