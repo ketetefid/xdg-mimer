@@ -2,7 +2,9 @@ Source: xdg-mimer
 Section: utils
 Priority: optional
 Maintainer: Kete Tefid <ketetefid@gmail.com>
-Build-Depends: debhelper (>= 11), cargo
+Build-Depends:
+ debhelper-compat (= 13),
+ debhelper (>= 11), cargo
 Standards-Version: 4.1.4
 
 Package: xdg-mimer
