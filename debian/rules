@@ -1,3 +1,10 @@
 #!/usr/bin/make -f
+
 %:
-	dh $@
+	dh $@ --buildsystem=cargo
+
+override_dh_auto_build:
+	cargo build --release
+
+override_dh_auto_install:
+	install -Dm755 target/release/xdg-mimer $(DESTDIR)/usr/bin/xdg-mimer
