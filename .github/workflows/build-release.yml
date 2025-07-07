@@ -98,7 +98,18 @@ jobs:
       - name: Install RPM and Rust dependencies
         run: |
           dnf update -y
-          dnf install -y rpm-build rust cargo make gcc
+          dnf install -y \
+              rust cargo \
+              pkgconf-pkg-config \
+              glib2-devel \
+              gtk4-devel \
+              pango-devel \
+              cairo-devel \
+              gdk-pixbuf2-devel \
+              graphene-devel \
+              libadwaita-devel \
+              gcc make automake autoconf libtool \
+              rpm-build
 
       - name: Set up RPM build structure
         run: |
