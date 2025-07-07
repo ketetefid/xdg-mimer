@@ -87,6 +87,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        
+      - name: Extract version from Cargo.toml
+        id: extract_version
+        run: |
+          VERSION=$(grep '^version' Cargo.toml | head -n 1 | cut -d '"' -f2)
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Install RPM and Rust dependencies
         run: |
@@ -96,7 +103,7 @@ jobs:
       - name: Set up RPM build structure
         run: |
           mkdir -p rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-          sed "s/^Version:.*/Version:        $VERSION/" xdg-mimer.spec > rpmbuild/SPECS/xdg-mimer.spec
+          sed "s/@VERSION@/${{ env.VERSION }}/g" xdg-mimer.spec > rpmbuild/SPECS/xdg-mimer.spec
           tar czf rpmbuild/SOURCES/xdg-mimer-$VERSION.tar.gz --transform "s,^,xdg-mimer-$VERSION/," .
 
       - name: Build RPM
@@ -160,6 +167,11 @@ jobs:
       - name: Build package (no sudo required)
         run: |
           su builder -c "makepkg -s --noconfirm"
+
+      - name: Show current GitHub context
+        run: echo "$GITHUB_CONTEXT"
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
 
       - name: Upload .pkg.tar.zst
         uses: softprops/action-gh-release@v1
