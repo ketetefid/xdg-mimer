@@ -12,8 +12,8 @@ Build-Depends:
   libpango1.0-dev,
   libcairo2-dev,
   libgdk-pixbuf-2.0-dev,
-  libgraphene-1.0-dev,
-  libadwaita-1-dev
+  libgraphene-1.0-dev
+
 Standards-Version: 4.6.2
 Homepage: https://github.com/ketetefid/xdg-mimer
 Rules-Requires-Root: no
