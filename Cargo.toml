@@ -1,5 +1,5 @@
 [package]
-name = "xdg_mimer"
+name = "xdg-mimer"
 version = "0.1.0"
 edition = "2021"
 
