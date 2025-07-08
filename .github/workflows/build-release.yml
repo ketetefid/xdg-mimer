@@ -66,6 +66,13 @@ jobs:
           echo "" >> debian/changelog
           echo " -- GitHub Actions <no-reply@github.com>  $(date -R)" >> debian/changelog
 
+      - name: Remove cargo wrapper that uses rustup
+        run: |
+          rm -f /usr/share/cargo/bin/cargo
+          which cargo
+          cargo --version
+          rustc --version
+          
       - name: Build .deb
         run: |
           cd debuild
