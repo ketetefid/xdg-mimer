@@ -27,7 +27,7 @@ jobs:
       - name: Install packaging tools and deps
         run: |
           apt-get update
-          apt-get install -y devscripts debhelper rpm build-essential pkg-config \
+          apt-get install -y devscripts debhelper rsync build-essential pkg-config \
           cargo rustc dh-cargo \
           libgtk-4-dev \
           libglib2.0-dev \
