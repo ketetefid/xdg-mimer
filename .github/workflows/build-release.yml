@@ -68,9 +68,8 @@ jobs:
 
       - name: Setup cargo wrapper that uses rustup
         run: |
-          rustup install stable
-          rustup default stable
-          #ln -s /github/home/.cargo/bin/cargo /usr/bin/cargo
+          rm -f /usr/share/cargo/bin/cargo
+          ln -s /github/home/.cargo/bin/cargo /usr/share/cargo/bin/cargo
           ls -lsh $(which cargo)
           cargo --version
           rustc --version
