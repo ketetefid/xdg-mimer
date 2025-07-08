@@ -68,7 +68,8 @@ jobs:
 
       - name: Remove cargo wrapper that uses rustup
         run: |
-          rm -f /usr/share/cargo/bin/cargo
+          #rm -f /usr/share/cargo/bin/cargo
+          ln -s /github/home/.cargo/bin/cargo /usr/bin/cargo
           which cargo
           cargo --version
           rustc --version
