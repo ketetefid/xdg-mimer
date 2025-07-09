@@ -61,6 +61,8 @@ jobs:
         run: |
           #rm -f /usr/share/cargo/bin/cargo
           #ln -s /github/home/.cargo/bin/cargo /usr/share/cargo/bin/cargo
+          rustup install stable
+          rustup default stable
           ls -lsh $(which cargo)
           cargo --version
           rustc --version
