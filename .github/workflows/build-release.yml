@@ -28,7 +28,7 @@ jobs:
         run: |
           apt-get update
           apt-get install -y devscripts debhelper rsync build-essential pkg-config \
-          cargo rustc dh-cargo \
+          dh-cargo \
           libgtk-4-dev \
           libglib2.0-dev \
           libgdk-pixbuf-2.0-dev \
@@ -38,6 +38,12 @@ jobs:
           libgirepository1.0-dev \
           libatk1.0-dev \
           libadwaita-1-dev
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
           
       # ----- DEB BUILD -----
       - name: Prepare Debian changelog
