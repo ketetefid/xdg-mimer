@@ -1,5 +1,5 @@
 #!/usr/bin/make -f
-
+export DH_CARGO_DISABLE_CHECKSUM=1
 %:
 	dh $@ --buildsystem=cargo
 
