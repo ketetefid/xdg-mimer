@@ -39,12 +39,6 @@ jobs:
           libatk1.0-dev \
           libadwaita-1-dev
           
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-
       # ----- DEB BUILD -----
       - name: Prepare Debian changelog
         run: |
