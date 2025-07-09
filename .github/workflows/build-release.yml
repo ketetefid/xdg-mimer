@@ -28,7 +28,7 @@ jobs:
         run: |
           apt-get update
           apt-get install -y devscripts debhelper rsync build-essential pkg-config \
-          dh-cargo \
+          dh-cargo cargo \
           libgtk-4-dev \
           libglib2.0-dev \
           libgdk-pixbuf-2.0-dev \
@@ -39,13 +39,6 @@ jobs:
           libatk1.0-dev \
           libadwaita-1-dev
 
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-          
-      # ----- DEB BUILD -----
       - name: Prepare Debian changelog
         run: |
           cp -r debian debuild/
@@ -56,12 +49,6 @@ jobs:
           echo "  * Auto-generated release." >> debian/changelog
           echo "" >> debian/changelog
           echo " -- GitHub Actions <no-reply@github.com>  $(date -R)" >> debian/changelog
-
-      - name: Setup cargo wrapper that uses rustup
-        run: |
-          ls -lsh $(which cargo)
-          cargo --version
-          rustc --version
           
       - name: Build .deb
         run: |
@@ -71,11 +58,9 @@ jobs:
           cd ..
           mv *.deb dist/
 
-      - name: Build binary
-        run: cargo build --release
-    
-      - name: Package as .tar.gz
+      - name: Build binary & package as .tar.gz
         run: |
+          cargo build --release
           cp target/release/xdg-mimer dist/
           tar -czvf dist/xdg-mimer-${{ env.VERSION }}-linux.tar.gz -C dist xdg-mimer
           
@@ -148,15 +133,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      - name: Extract version from Cargo.toml
+      - name: Extract version from Cargo.toml & replace version in PKGBUILD
         id: extract_version
         run: |
           VERSION=$(grep '^version' Cargo.toml | head -n 1 | cut -d '"' -f2)
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-        
-      - name: Replace version in PKGBUILD
-        run: sed -i "s/@VERSION@/${{ env.VERSION }}/g" PKGBUILD
+          sed -i "s/@VERSION@/${{ env.VERSION }}/g" PKGBUILD
 
       - name: Install system and build dependencies
         run: |
@@ -186,14 +169,9 @@ jobs:
           mv buildsrc xdg-mimer-${VERSION}
           tar -czf xdg-mimer-${VERSION}.tar.gz xdg-mimer-${VERSION}
     
-      - name: Build package (no sudo required)
+      - name: Build package
         run: |
           su builder -c "makepkg -s --noconfirm"
-
-      - name: Show current GitHub context
-        run: echo "$GITHUB_CONTEXT"
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
 
       - name: Upload .pkg.tar.zst
         uses: softprops/action-gh-release@v1
