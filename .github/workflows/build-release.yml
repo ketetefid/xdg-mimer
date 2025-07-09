@@ -45,15 +45,6 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Build binary
-        run: cargo build --release
-    
-      - name: Package as .tar.gz
-        run: |
-          mkdir -p dist
-          cp target/release/xdg-mimer dist/
-          tar -czvf dist/xdg-mimer-${{ env.VERSION }}-linux.tar.gz -C dist xdg-mimer
-
       # ----- DEB BUILD -----
       - name: Prepare Debian changelog
         run: |
@@ -68,18 +59,27 @@ jobs:
 
       - name: Setup cargo wrapper that uses rustup
         run: |
-          rm -f /usr/share/cargo/bin/cargo
-          ln -s /github/home/.cargo/bin/cargo /usr/share/cargo/bin/cargo
+          #rm -f /usr/share/cargo/bin/cargo
+          #ln -s /github/home/.cargo/bin/cargo /usr/share/cargo/bin/cargo
           ls -lsh $(which cargo)
           cargo --version
           rustc --version
           
       - name: Build .deb
         run: |
+          mkdir -p dist
           cd debuild
           dpkg-buildpackage -us -uc
           cd ..
           mv *.deb dist/
+
+      - name: Build binary
+        run: cargo build --release
+    
+      - name: Package as .tar.gz
+        run: |
+          cp target/release/xdg-mimer dist/
+          tar -czvf dist/xdg-mimer-${{ env.VERSION }}-linux.tar.gz -C dist xdg-mimer
           
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v1
