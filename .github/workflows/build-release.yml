@@ -50,7 +50,8 @@ jobs:
           mkdir -p dist
           cargo build --release
           cp target/release/xdg-mimer dist/
-          tar -czvf dist/xdg-mimer-${{ env.VERSION }}-linux.tar.gz -C dist xdg-mimer
+          ARCH=$(dpkg --print-architecture)
+          tar -czvf dist/xdg-mimer-${{ env.VERSION }}-${ARCH}-linux.tar.gz -C dist xdg-mimer
           rm dist/xdg-mimer
           
       - name: Build .deb from the binary without dh-cargo
