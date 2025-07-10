@@ -139,7 +139,7 @@ jobs:
           VERSION=$(grep '^version' Cargo.toml | head -n 1 | cut -d '"' -f2)
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          sed -i "s/@VERSION@/${{ env.VERSION }}/g" PKGBUILD
+          sed -i "s/@VERSION@/${VERSION}/g" PKGBUILD
 
       - name: Install system and build dependencies
         run: |
