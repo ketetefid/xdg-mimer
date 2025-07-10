@@ -1,0 +1,22 @@
+Source: xdg-mimer
+Section: utils
+Priority: optional
+Maintainer: Kete Tefid <ketetefid@gmail.com>
+Build-Depends:
+  debhelper-compat (= 13),
+  dh-cargo,
+  pkg-config,
+  libgtk-4-dev,
+  libglib2.0-dev,
+  libpango1.0-dev,
+  libcairo2-dev,
+  libgdk-pixbuf-2.0-dev,
+  libgraphene-1.0-dev
+Standards-Version: 4.6.2
+Homepage: https://github.com/ketetefid/xdg-mimer
+Rules-Requires-Root: no
+
+Package: xdg-mimer
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: A GUI for managing MIME associations using XDG standards.
