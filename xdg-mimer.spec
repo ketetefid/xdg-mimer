@@ -25,5 +25,9 @@ install -D target/release/xdg-mimer %{buildroot}/usr/bin/xdg-mimer
 /usr/bin/xdg-mimer
 
 %changelog
+* Mon Jul 21 2025 Kete Tefid <ketetefid@gmail.com> - @VERSION@-1
+- Added command-line arguments
+- Improvements in the UI
+
 * Fri Jul 05 2025 Kete Tefid <ketetefid@gmail.com> - @VERSION@-1
 - Initial RPM release

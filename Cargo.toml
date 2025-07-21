@@ -1,11 +1,16 @@
 [package]
 name = "xdg-mimer"
-version = "0.1.0"
+version = "0.1.1"
+authors = ["Kete Tefid <ketetefid@gmail.com>"]
+description = "A GUI tool for managing MIME associations using XDG standards"
 edition = "2021"
 
 [dependencies]
+clap = { version = "4.5", features = ["derive"] }
+which = "5"
 dirs = "5"
 gtk = { version = "0.9.5", package = "gtk4", features = ["v4_12"] }
+gdk = { version = "0.9.5", package = "gdk4", features = ["v4_12"] }
 regex = "1.11.1"
 relm4 = "0.9.1"
 relm4-components = "0.9.1"

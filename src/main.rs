@@ -1,3 +1,19 @@
+// This file is part of xdg-mimer application.
+
+// xdg-mimer is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// xdg-mimer is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+use clap::{ArgGroup, Parser};
 use dirs::home_dir;
 use regex::Regex;
 use std::process::Command;
@@ -8,6 +24,23 @@ use std::{
 
 use gtk::prelude::*;
 use relm4::prelude::*;
+
+/// Command-line arguments
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+#[command(group(
+    ArgGroup::new("input")
+	.args(&["search", "file"])
+))]
+struct Args {
+    /// Search string for the mime
+    #[arg(short, long)]
+    search: Option<String>,
+
+    /// File whose mime will be checked
+    #[arg(short, long)]
+    file: Option<PathBuf>,
+}
 
 /// The type of messages the model uses for input communication
 #[derive(Debug)]
@@ -37,9 +70,10 @@ struct AppModel {
 
 /// The widgets
 struct AppWidgets {
-    label: gtk::Label,       // the label that updates when searching
-    dropdown: gtk::DropDown, // the dropdown containing [narrowed-down] list of mimes
-    appbox: gtk::Box,        // the Box for listing apps for the selected mime
+    search_entry: gtk::SearchEntry, // the search place
+    label: gtk::Label,              // the label that updates when searching
+    dropdown: gtk::DropDown,        // the dropdown containing [narrowed-down] list of mimes
+    appbox: gtk::Box,               // the Box for listing apps for the selected mime
 }
 
 /// Visualize the variables using Component trait
@@ -51,8 +85,9 @@ impl Component for AppModel {
     // the command output for this component
     type CommandOutput = ();
     // the type of data with which this component will be initialized
-    // which is a vector of filepaths containing mimes and apps
-    type Init = Vec<PathBuf>;
+    // which is a tuple of vector of filepaths containing mimes and apps
+    // and the command-line arguments
+    type Init = (Vec<PathBuf>, Args);
     // the root GTK window this component will create
     type Root = gtk::Window;
     // the widgets this component will need to update
@@ -73,7 +108,7 @@ impl Component for AppModel {
         window: Self::Root,
         sender: ComponentSender<Self>,
     ) -> relm4::ComponentParts<Self> {
-        let mimes_apps = get_mimes_apps(mime_paths);
+        let mimes_apps = get_mimes_apps(mime_paths.0);
         let selected_mime_index = 0;
         let selected_mime = String::from("");
         let mode = AppMode::Searching; // the default mode
@@ -144,8 +179,26 @@ impl Component for AppModel {
             .orientation(gtk::Orientation::Vertical)
             .spacing(20)
             .build();
-
         appbox.set_homogeneous(true);
+
+        // adding some css style for appbox
+        let css_provider = gtk::CssProvider::new();
+        css_provider.load_from_string(
+            "
+        #appbox {
+            border: 2px solid gray;
+            border-radius: 8px;
+            padding: 30px;
+            background-color: #f0f0f0;
+        }
+        ",
+        );
+
+        gtk::style_context_add_provider_for_display(
+            &gdk::Display::default().expect("Could not connect to a display."),
+            &css_provider,
+            gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+        );
 
         bottom_vbox.append(&appbox);
         bottom_vbox.set_margin_all(100);
@@ -156,10 +209,36 @@ impl Component for AppModel {
         main_vbox.append(&bottom_vbox);
 
         let widgets = AppWidgets {
+            search_entry,
             label,
             dropdown,
             appbox,
         };
+
+        // parsing search commmand-line arg
+        if let Some(query) = mime_paths.1.search {
+            widgets.search_entry.set_text(&query);
+        }
+
+        // parsing file commmand-line arg
+        if let Some(file_path) = mime_paths.1.file {
+            if which::which("file").is_ok() {
+                let real_path = file_path.canonicalize();
+                if let Some(path) = real_path.ok() {
+                    if let Some(ok_path) = path.to_str() {
+                        let query = extract_mime(ok_path);
+                        widgets.search_entry.set_text(&query);
+                        println!("The supplied file's mime type is {}", query);
+                    } else {
+                        eprintln!("The path is not valid unicode.");
+                    }
+                } else {
+                    eprintln!("The supplied file as {:?} doesn't exist.", file_path);
+                }
+            } else {
+                eprintln!("The 'file' command is not installed.");
+            }
+        }
 
         ComponentParts { model, widgets }
     }
@@ -240,7 +319,7 @@ impl Component for AppModel {
             widgets.dropdown.set_selected(0);
         } else {
             // both other AppModes trigger this part.
-            // first, remove all the widgets from appbox
+            // first, remove all the current widgets from appbox
             let children = widgets.appbox.observe_children();
             let nbox = children.n_items();
             let to_remove: Vec<gtk::Widget> = (0..nbox)
@@ -274,6 +353,8 @@ impl Component for AppModel {
                     self.selected_mime
                 ));
                 widgets.appbox.append(&app_title);
+                // load css only when there are elements for it
+                widgets.appbox.set_widget_name("appbox");
 
                 m_apps.iter().for_each(|app| {
                     let set_default;
@@ -378,9 +459,26 @@ fn set_default_handler(mime_type: &str, handler: &str) {
         .status();
 }
 
+/// Extracts the mime info from a file using "file" command
+fn extract_mime(filepath: &str) -> String {
+    // if not successful, just return an empty string
+    let output = Command::new("file")
+        .args(["-b", "--mime-type", filepath])
+        .output()
+        .ok()
+        .and_then(|o| String::from_utf8(o.stdout).ok())
+        .map(|s| s.trim().to_string())
+        .unwrap_or_default();
+
+    output
+}
+
 //*********************************************************************
 
 fn main() {
+    let args = Args::parse();
+    println!("Supplied arguments: {:?}", args);
+
     let mut mime_paths = Vec::new();
     let mime_path1_user = home_dir()
         .map(|home| home.join(".config/mimeapps.list"))
@@ -400,6 +498,6 @@ fn main() {
         .collect();
     println!("Avilable mime files: {:?}", mime_paths);
 
-    let app = RelmApp::new("xdg-mimer");
-    app.run::<AppModel>(mime_paths);
+    let app = RelmApp::new("io.github.ketetefid.xdg_mimer").with_args(vec!["".to_string()]);
+    app.run::<AppModel>((mime_paths, args));
 }
